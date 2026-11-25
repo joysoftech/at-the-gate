@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14110e">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="AT THE GATE — an Old Testament judgement simulation. Spend 20 deliberation tokens across 3 disputes; your precedents build a society.">
+<title>AT THE GATE — Old Testament Judgement Sim</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:#14110e;color:#e2e8f0;font:400 15px/1.55 system-ui,-apple-system,sans-serif;min-height:100vh}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:default}
+:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
+#shell{max-width:440px;margin:0 auto;padding:0 14px 42px}
+svg{display:inline-block;vertical-align:-3px}
+.intro{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:13px;padding:7vh 0 8px}
+.gate{width:60px;height:60px;border-radius:50%;border:1px solid #3a3128;display:flex;align-items:center;justify-content:center;color:#f59e0b;background:#1f1a14}
+.gate svg{width:28px;height:28px}
+.ey{font-size:12px;letter-spacing:.26em;color:#f59e0b;font-weight:700}
+h1{font-size:42px;letter-spacing:.04em;line-height:1.05}
+.lede{color:#a89e90;font-size:16px;max-width:38ch}
+.lede b{color:#f59e0b;font-weight:700}
+.howto{width:100%;background:#1f1a14;border:1px solid #3a3128;border-radius:16px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.howto .ht{font-size:11px;letter-spacing:.2em;color:#f59e0b;font-weight:700}
+.hb{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:#c9bfb1;line-height:1.5;text-align:left}
+.hb svg{width:16px;height:16px;color:#f59e0b;flex:none;margin-top:3px}
+.hb b{color:#f59e0b;font-weight:700}
+.cta{margin-top:8px;width:100%;padding:16px;border-radius:14px;background:#f59e0b;color:#191104;font-weight:800;font-size:16px;letter-spacing:.1em;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta svg{width:18px;height:18px}
+.cta:active{transform:scale(.98)}
+.foot{font-size:11px;letter-spacing:.14em;color:#6f6558;margin-top:12px;text-align:center}
+.top{position:sticky;top:0;z-index:20;margin:0 -14px;padding:10px 14px 8px;background:rgba(20,17,14,.95);backdrop-filter:blur(8px);border-bottom:1px solid #3a3128}
+.trow{display:flex;align-items:center;gap:10px}
+.trow+.trow{margin-top:7px}
+.badge{font-size:11px;font-weight:700;letter-spacing:.12em;color:#14110e;background:#f59e0b;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.rst{font-size:10px;font-weight:700;letter-spacing:.12em;color:#8b7f6e;border:1px solid #3a3128;border-radius:6px;padding:3px 7px;background:none}
+.batwrap{flex:1;display:flex;align-items:center;gap:7px}
+.bl svg{width:13px;height:13px;color:#f59e0b}
+.tok{font-weight:800;font-size:14px;min-width:32px;text-align:right}
+.ok{color:#34d399}.warn{color:#f59e0b}.bad{color:#f87171}
+.bat{flex:1;height:10px;border-radius:99px;background:#2a241c;overflow:hidden}
+.bat i{display:block;height:100%;border-radius:99px;transition:width .45s ease,background .45s ease}
+.bat i.ok{background:#34d399}.bat i.warn{background:#f59e0b}.bat i.bad{background:#f87171}
+.pill{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#8b7f6e;border:1px solid #3a3128;background:#1f1a14;border-radius:99px;padding:5px 4px}
+.pill svg{width:11px;height:11px}
+.tip{display:none;margin-top:7px;font-size:12px;color:#f59e0b;letter-spacing:.04em}
+.tip.on{display:block}
+.roll{margin-top:12px;border:1px solid rgba(245,158,11,.4);border-left:4px solid #f59e0b;background:rgba(245,158,11,.05);border-radius:10px;padding:9px 12px}
+.roll summary{list-style:none;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.16em;color:#f59e0b;cursor:pointer}
+.roll summary::-webkit-details-marker{display:none}
+.roll summary svg{width:13px;height:13px}
+.roll summary::after{content:"+";margin-left:auto;font-size:14px}
+details[open] summary::after{content:"–"}
+.roll-i{margin-top:8px;display:grid;gap:5px}
+.roll-i p,.roll p{font-size:14px;color:#d8cfc2;font-style:italic}
+.pl{font-style:normal;color:#f59e0b;font-weight:700;margin-right:4px;font-size:12px}
+.case{margin-top:14px;background:#1f1a14;border:1px solid #3a3128;border-radius:16px;padding:16px}
+.case h2{font-size:20px;line-height:1.25}
+.cttl{display:flex;align-items:center;gap:10px}
+.cico{width:36px;height:36px;background:#262019;border:1px solid #3a3128;border-radius:10px;color:#f59e0b;flex:none;display:flex;align-items:center;justify-content:center}
+.cico svg{width:20px;height:20px}
+.refs{display:inline-block;margin-top:8px;font-size:12px;color:#f59e0b;border:1px solid rgba(245,158,11,.45);border-radius:6px;padding:2px 8px;letter-spacing:.03em}
+.ctx{margin-top:10px;font-size:15px;color:#e2e8f0}
+.sh{margin-top:18px;font-size:11px;font-weight:700;letter-spacing:.2em;color:#8b7f6e}
+.inv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.icell{display:flex;flex-direction:column;gap:4px}
+.ibtn{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border-radius:12px;background:#262019;border:1px solid #3a3128}
+.ibtn svg{width:18px;height:18px;color:#f59e0b}
+.ibtn .il{font-size:13px;font-weight:700;letter-spacing:.06em}
+.ibtn.got{border-color:rgba(52,211,153,.55);background:rgba(52,211,153,.07)}
+.ibtn.got svg{color:#34d399}
+.ibtn.got .il{color:#34d399}
+.ibtn.dry{opacity:.55}
+.ibtn.dry .il{color:#f87171;font-size:12px}
+.ibtn:not(.got):not([disabled]):active{transform:scale(.97)}
+.hint{font-size:12px;font-style:italic;color:#8b7f6e;line-height:1.35}
+.find{margin-top:10px;padding:11px 13px;background:#191510;border-left:3px solid #f59e0b;border-radius:10px;animation:up .4s ease}
+.find.s{border-left-color:#34d399}
+.find .fh{display:block;font-size:11px;font-weight:700;letter-spacing:.14em;color:#f59e0b;margin-bottom:4px}
+.find.s .fh{color:#34d399}
+.find p{font-size:15px;color:#e2e8f0}
+@keyframes up{from{opacity:0;transform:translateY(8px)}}
+.rlist{margin-top:8px;display:grid;gap:10px}
+.rule{position:relative;display:flex;flex-direction:column;gap:7px;align-items:flex-start;width:100%;text-align:left;background:#1f1a14;border:1px solid #3a3128;border-radius:14px;padding:14px}
+.rule.sel{border-color:#f59e0b;box-shadow:0 0 0 1px #f59e0b}
+.rule.unl{animation:pulse .9s ease}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.55)}100%{box-shadow:0 0 0 14px rgba(245,158,11,0)}}
+.rl{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#262019;border:1px solid #3a3128;border-radius:8px;font-weight:800;font-size:15px}
+.rti{font-size:16px;font-weight:700}
+.rsm{font-size:14.5px;color:#c9bfb1}
+.rpr{font-size:13.5px;font-style:italic;color:#e0b667}
+.full{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#34d399;border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08);border-radius:8px;padding:4px 8px}
+.full svg{width:12px;height:12px}
+.rule.lock{opacity:.55;border-style:dashed;flex-direction:row;align-items:center;gap:10px}
+.rule.lock svg{width:18px;height:18px;color:#f59e0b;flex:none}
+.lockt{font-size:14px;color:#a89e90;line-height:1.4}
+.confirm{width:100%;margin-top:6px;padding-top:11px;border-top:1px dashed #3a3128;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ct{font-size:14px;font-weight:600;flex:1 1 100%}
+.yes{flex:1;padding:10px;border-radius:10px;background:#f59e0b;color:#191104;font-weight:800;font-size:13px;letter-spacing:.08em}
+.no{flex:1;padding:10px;border-radius:10px;border:1px solid #3a3128;color:#a89e90;font-size:13px;letter-spacing:.08em}
+.rxcard{background:#1f1a14;border:1px solid #3a3128;border-radius:16px;padding:16px;margin-top:14px;display:flex;flex-direction:column;gap:10px;animation:up .4s ease}
+.rxh{font-size:11px;font-weight:700;letter-spacing:.2em;color:#f59e0b}
+.rxt{font-size:15.5px;color:#e2e8f0;line-height:1.6}
+.rxp{font-size:13.5px;font-style:italic;color:#e0b667}
+.rxcard .cta{max-width:none;margin-top:4px}
+.ban{margin-top:18px;background:#1f1a14;border:1px solid #3a3128;border-radius:18px;padding:22px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.bico{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#262019;border:1px solid #3a3128}
+.bico svg{width:30px;height:30px}
+.bico.good{color:#34d399;border-color:rgba(52,211,153,.5)}
+.bico.warn{color:#f59e0b;border-color:rgba(245,158,11,.5)}
+.bico.bad{color:#f87171;border-color:rgba(248,113,113,.5)}
+.ban h2{font-size:19px;letter-spacing:.06em}
+.vp{color:#c9bfb1;font-size:15px}
+.stats{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:#1f1a14;border:1px solid #3a3128;border-radius:14px;padding:12px 8px;text-align:center;display:grid;gap:4px}
+.sn{font-size:10px;font-weight:700;letter-spacing:.16em;color:#8b7f6e}
+.sub{font-size:10px;color:#8b7f6e}
+.sv{font-size:26px;font-weight:800}
+.ss{font-size:10px;font-weight:700;letter-spacing:.12em}
+.diag{margin-top:12px;border-radius:14px;padding:14px;border:1px solid}
+.diag .dh{display:block;font-size:10px;font-weight:700;letter-spacing:.16em;margin-bottom:6px}
+.diag p{font-size:14.5px}
+.diag.bad{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.06)}
+.diag.bad .dh{color:#f87171}
+.diag.good{border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.06)}
+.diag.good .dh{color:#34d399}
+.acts{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{display:flex;align-items:center;justify-content:center;gap:7px;padding:14px;border-radius:12px;background:#f59e0b;color:#191104;font-weight:800;font-size:14px;letter-spacing:.08em}
+.primary svg,.ghost svg{width:15px;height:15px}
+.ghost{display:flex;align-items:center;justify-content:center;gap:7px;padding:14px;border-radius:12px;border:1px solid #3a3128;color:#e2e8f0;font-size:13px;letter-spacing:.06em;font-weight:700}
+</style>
+</head>
+<body>
+<div id="shell"><div id="app"></div></div>
+<noscript><p style="padding:24px;text-align:center">AT THE GATE needs JavaScript to run.</p></noscript>
+<script>
+"use strict";
+const IC={
+bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+hear:'<path d="M17 8.5a5 5 0 0 0-10 0c0 4.5 5.5 4.5 5.5 9.5a2.75 2.75 0 0 1-5.5 0"/><path d="M9.5 8.5a2.5 2.5 0 0 1 5 0"/>',
+search:'<circle cx="11" cy="11" r="6"/><path d="m16.5 16.5 4 4"/>',
+scroll:'<path d="M7 3h8l4 4v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/>',
+lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+scales:'<path d="M12 3v18"/><path d="M8 21h8"/><path d="M4 7h16"/><path d="M7 7l-3 6a3.2 3.2 0 0 0 6 0L7 7z"/><path d="M17 7l-3 6a3.2 3.2 0 0 0 6 0l-3-6z"/>',
+check:'<path d="M5 13l4 4L19 7"/>',
+rotate:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+chain:'<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="16" y2="12"/>',
+alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+wheat:'<path d="M12 22V8"/><path d="M12 12c-3 0-5-2-5-5 3 0 5 2 5 5z"/><path d="M12 12c3 0 5-2 5-5-3 0-5 2-5 5z"/><path d="M12 17c-3 0-5-2-5-5 3 0 5 2 5 5z"/><path d="M12 17c3 0 5-2 5-5-3 0-5 2-5 5z"/>'};
+
+const CASES=[
+{ic:"chain",t:"The Debt-Slave Who Wants to Stay",r:"Exod 21:2–6 vs Deut 15:12–18",
+c:"A Hebrew debt-slave reaches his seventh year. His master brings him to the gate quoting Exodus 21: “He loves my household and wants to stay permanently. Pierce his ear.” The slave stands silent beside him.",
+h:"The slave whispers: he was sold as a child, has no living family, and owns no land. Staying is survival, not freedom.",
+s:"Deut 15:13–14 commands the master not to send a freed slave away empty-handed, but to furnish him liberally from flock, threshing floor, and winepress. The master withheld it.",
+ru:[
+{id:"A",ap:"letter",t:"Permit the ceremony",sm:"Exodus 21 allows a slave to stay. Honour his stated wish.",pr:"A stated choice is binding.",rx:"The master smiles and leads the silent man away. The elders nod at your restraint, though two poor labourers spit in the dust.",d:[-6,-6,8]},
+{id:"B",ap:"mercy",t:"Refuse and free him outright",sm:"Override the permission; send him out free today.",pr:"An elder may override Torah permission for mercy.",rx:"The man walks out free—with empty hands. The elders murmur that you brushed aside Exodus 21 without a hearing.",d:[-4,8,-6]},
+{id:"C",ap:"spirit",cv:{
+hear:{t:"Delay the ceremony; grant temporary refuge",sm:"He has no family or land. Pause the ear-piercing and give him a season in the town's care.",pr:"Desperation must not be mistaken for consent.",rx:"The slave exhales in relief—though the master demands to know what statute lets you delay his household's rights.",d:[4,10,-5]},
+search:{t:"Enforce Deut 15 severance strictly",sm:"Cite Deut 15:13–14 and fine the master his full flock and grain obligation before closing the case.",pr:"Statutory provision is mandatory at release.",rx:"The master pays stiffly under the law's weight, though no one paused to ask whether the slave actually has a home to go to.",d:[10,4,-3]},
+both:{t:"Restore Deut 15 livelihood so his choice is free",sm:"Order the master to furnish him liberally under Deut 15:13–14; only once he can stand on his own may he choose.",pr:"A choice made under withheld provision is not free.",rx:"The slave weeps with relief. Behind you, wealthy householders mutter that you just raised the cost of freeing every debt-slave.",d:[10,8,-2]}}}]},
+{ic:"alert",t:"The Goring Ox",r:"Exod 21:28–30; Exod 23:8; Deut 16:19",
+c:"A known-dangerous ox has killed a neighbour's child. The grieving father demands the owner's life under Exodus 21:29 and refuses any kopher (ransom). The ox owner is your own brother-in-law.",
+h:"Witnesses confirm the child climbed over a broken courtyard wall chasing a stray goat. Your brother-in-law meant to repair the wall weeks ago.",
+s:"Exod 21:30 permits a kopher (ransom), though the father refuses it. Exod 23:8 and Deut 16:19 strictly forbid partiality in judgement.",
+ru:[
+{id:"A",ap:"letter",t:"Apply v.29 strictly",sm:"The ox was known to gore. Hold your brother-in-law's life forfeit.",pr:"The statute stands even against kin.",rx:"The crowd falls dead silent. Your sister wails as your brother-in-law is led away—yet even strangers whisper that this gate shows no partiality.",d:[8,-10,2]},
+{id:"B",ap:"cohesion",t:"Impose kopher (ransom)",sm:"Spare your brother-in-law and compel a heavy silver ransom despite the father's refusal.",pr:"Ransom may be imposed to preserve peace.",rx:"The grieving father throws your silver at your feet and curses the gate. Across the square, people whisper that you bent the law for your own kin.",d:[-6,-2,-6]},
+{id:"C",ap:"spirit",cv:{
+hear:{t:"Weigh the broken wall; spare his life",sm:"The child climbed a broken wall. Spare your brother-in-law's life and order restitution plus wall repair.",pr:"Shared negligence tempers strict blood-guilt.",rx:"The grieving father storms out shouting that you invented excuses to save your own brother-in-law's neck.",d:[2,8,-7]},
+search:{t:"Recuse yourself under Exod 23:8",sm:"Torah forbids partiality toward kin. Step down from the bench and hand your brother-in-law's trial to another elder.",pr:"No elder may judge his own household.",rx:"The gate respects your refusal to show partiality, though your sister weeps as your brother-in-law is led to a harsher bench.",d:[8,-6,2]},
+both:{t:"Convene impartial elders; spare life with full kopher",sm:"Bring in a co-elder under Exod 23:8 to avoid partiality, weigh the broken wall, spare your brother-in-law's life, mandate full kopher restitution, and rebuild the wall.",pr:"Shared negligence tempers blood-guilt—when judged without partiality.",rx:"An impartial co-elder upholds your ruling. Your brother-in-law lives in humbled restitution, the wall is rebuilt, and even the grieving father sees no favouritism at this gate, but mourns the death of his child for years.",d:[8,8,8]}}}]},
+{ic:"wheat",t:"The Harvest Gleaners",r:"Lev 19:9–10; Deut 24:19–22",
+c:"A wealthy landowner harvests the corners of his field at dawn, leaving only trampled stalks for the poor. He argues: “I left gleanings, as Leviticus requires.” The poor say nothing edible remains.",
+h:"The complainants are widows and orphans from the lower quarter. Without usable grain from this harvest, two households will starve this winter.",
+s:"Deut 24:22 anchors the gleaning law: ‘Remember that you were slaves in Egypt.’ The statute exists for covenant survival, not technical compliance.",
+ru:[
+{id:"A",ap:"letter",t:"Dismiss the complaint",sm:"The statute sets no minimum corner width. He met the letter of the law.",pr:"Technical compliance satisfies the law.",rx:"The landowner bows politely and leaves. The widows gather their empty baskets and walk away from the gate in silence.",d:[-6,-6,8]},
+{id:"B",ap:"mercy",t:"Order emergency grain seizure",sm:"Compel him to hand over a tenth of his stored barn immediately.",pr:"Need overrides property boundaries.",rx:"Grain fills the widows' baskets today—but landowners across the gate warn that no harvest is safe from your bench.",d:[-4,8,-6]},
+{id:"C",ap:"spirit",cv:{
+hear:{t:"Order emergency winter relief for the widows",sm:"Two households will starve without grain. Compel the landowner to supply their winter rations this season.",pr:"Survival of widows outweighs a clean harvest.",rx:"The widows carry home full baskets, though landowners grumble that you ruled from pity without setting a clear law.",d:[4,10,-5]},
+search:{t:"Mandate a fixed unharvested corner width",sm:"Ground the statute in Deut 24:22 and decree a measurable corner boundary for all future harvests.",pr:"Covenant law requires a measurable margin.",rx:"The elders record your new boundary rule, though the widows quietly ask what they will eat before next year's harvest.",d:[10,4,-3]},
+both:{t:"Mandate a measurable corner so widows can live",sm:"Anchor a minimum unharvested corner in Deut 24:22 and secure this harvest's share—the law's measure is whether the poor can eat.",pr:"The measure of the law is whether the vulnerable can live.",rx:"The widows cheer as you mark the field's corner—while the town's richest landowner swears he will never bring another dispute to your gate.",d:[10,8,-2]}}}]}];
+
+const ENDINGS=[
+{id:"covenant",ti:"THE COMMUNITY OF THE COVENANT",mood:"good",v:"The gate held the letter, mercy, and the people together. Israel trusted its disputes to you.",v2:"Letter, mercy, and community held together — the rarest judgement seat in Israel.",test:(s,f)=>s[0]>=28&&s[1]>=28&&s[2]>=6&&!f},
+{id:"captured",ti:"THE CAPTURED GATE",mood:"warn",v:"Peace was kept—the peace of the powerful. The gate stayed quiet by ruling for status and order over the vulnerable.",v2:"The town remained calm, because the poor learned to stop bringing hard cases to your bench.",test:(s)=>s[2]>=14&&s[0]<18},
+{id:"rigid",ti:"THE RIGID GATE",mood:"bad",v:"Every statute was kept and the people were lost. The letter stood alone at the gate.",v2:"You never bent — so the people learned to stop bringing hard cases to you.",test:(s,f)=>s[0]>=22&&(s[1]<20||(!f&&s[1]<28))},
+{id:"sentimental",ti:"THE SENTIMENTAL GATE",mood:"warn",v:"Mercy flowed without justice. The gate wept easily and weighed nothing.",v2:"Compassion without precedent dissolved into sentiment, case by case.",test:(s)=>s[1]>=26&&s[0]<28},
+{id:"fractured",ti:"THE FRACTURED GATE",mood:"bad",v:"",v2:"",test:()=>true}];
+
+const START_TOKENS=20,COST=5;
+const TIPS={
+justice:"JUSTICE (hidden) — Are the vulnerable protected and Torah upheld?",
+mercy:"MERCY (hidden) — Is human dignity preserved without crushing rigidity?",
+community:"COMMUNITY (hidden) — Does the town still trust the gate and hold together?"};
+let S=null,tipT=null;
+const SAVE_KEY="at_the_gate_v1";
+function saveState(){try{if(S)localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function loadState(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;
+const s=JSON.parse(raw);
+if(s&&typeof s.idx==="number"&&s.idx>=0&&s.idx<3&&Array.isArray(s.cases)&&s.cases.length===3&&Array.isArray(s.picked)&&s.picked.length===3&&Array.isArray(s.precedents)&&typeof s.tokens==="number"&&typeof s.done==="boolean")return s;}catch(e){}
+return null;}
+function clearState(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+
+function ic(n){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+"</svg>";}
+function newGame(){clearState();S={idx:0,tokens:START_TOKENS,cases:CASES.map(()=>({hear:false,search:false})),picked:[null,null,null],precedents:[],pending:null,done:false,animC:false,reaction:null};}
+function tokCls(){return S.tokens>=11?"ok":S.tokens>=5?"warn":"bad";}
+function stLbl(v){return v>=10?"HELD":v>=1?"STRAINED":"COLLAPSED";}
+function stCls(v){return v>=10?"good":v>=1?"warn":"bad";}
+function evaluate(){const st=[10,10,10],ap=[];
+CASES.forEach((cs,i)=>{const p=S.picked[i];if(!p)return;
+st[0]+=p.d[0];st[1]+=p.d[1];st[2]+=p.d[2];ap.push(p.ap);});
+const flipped=ap[0]!==ap[2];let e=ENDINGS[ENDINGS.length-1];
+for(const x of ENDINGS){if(x.test(st,flipped)){e=x;break;}}
+return{st,flipped,e};}
+function variantOf(ru,cse){return ru.cv?(cse.hear&&cse.search)?ru.cv.both:cse.hear?ru.cv.hear:ru.cv.search:ru;}
+const rollItem=(p,i)=>'<p><span class="pl mono">P'+(i+1)+':</span>“'+p+'”</p>';
+
+function introHTML(){return '<section class="intro">'+
+'<span class="gate">'+ic("scales")+'</span>'+
+'<span class="ey mono">OLD TESTAMENT JUDGEMENT SIM</span>'+
+'<h1>AT THE GATE</h1>'+
+'<p class="lede">One morning at the city gate: spend <b>20 deliberation tokens</b> across 3 disputes—your precedents build a society.</p>'+
+'<div class="howto"><span class="ht mono">HOW TO PLAY</span>'+
+'<div class="hb">'+ic("bolt")+'<span><b>20 Tokens for 3 Cases:</b> Spend 5T to HEAR hidden facts or SEARCH the Torah. You don’t have enough tokens to investigate everything.</span></div>'+
+'<div class="hb">'+ic("scales")+'<span><b>Every Choice Trades Off:</b> HEAR uncovers human reality (Mercy); SEARCH uncovers Torah (Justice). Combining both reveals a ruling neither witness nor Torah alone would surface.</span></div>'+
+'<div class="hb">'+ic("lock")+'<span><b>3 Hidden Stats:</b> <b>Justice</b> (upholding Torah &amp; the vulnerable), <b>Mercy</b> (preserving dignity), and <b>Community</b> (whether the town holds together &amp; trusts the gate) stay locked until the Autopsy.</span></div>'+
+'</div>'+
+'<button class="cta mono" data-act="start">'+ic("bolt")+'SIT AT THE GATE</button>'+
+'<p class="foot mono">HEAR · SEARCH · RULE · LIVE WITH YOUR PRECEDENTS</p></section>';}
+
+function caseHTML(){const cs=CASES[S.idx];let roll="";
+if(S.idx>0){roll='<details class="roll" open><summary>'+ic("scroll")+'<span>PRECEDENT ROLL</span></summary><div class="roll-i">'+S.precedents.slice(0,S.idx).map(rollItem).join("")+'</div></details>';}
+const body=S.reaction
+?'<section class="rxcard"><span class="rxh mono">THE GATE REACTS</span><p class="rxt">'+S.reaction.rx+'</p><p class="rxp">Precedent inscribed: “'+S.reaction.pr+'”</p><button type="button" class="cta mono" data-act="next">'+(S.idx<2?'NEXT CASE →':'VIEW THE AUTOPSY →')+'</button></section>'
+:'<section><h3 class="sh mono">INVESTIGATE — 5T PER ACTION</h3><div id="invzone"></div></section>'+
+'<section><h3 class="sh mono">RULE — SET A PRECEDENT</h3><div id="rulings" class="rlist"></div></section>';
+return '<header class="top">'+
+'<div class="trow"><span class="badge mono">CASE '+(S.idx+1)+' OF 3</span><button type="button" class="rst mono" data-act="again" title="Restart from Case 1">RESTART</button>'+
+'<div class="batwrap"><span class="bl">'+ic("bolt")+'</span><span id="tok" class="mono tok ok"></span><div class="bat"><i id="batfill" class="ok"></i></div></div></div>'+
+'<div class="trow"><button type="button" class="pill mono" data-act="pill" data-pi="justice">'+ic("lock")+'JUSTICE</button><button type="button" class="pill mono" data-act="pill" data-pi="mercy">'+ic("lock")+'MERCY</button><button type="button" class="pill mono" data-act="pill" data-pi="community">'+ic("lock")+'COMMUNITY</button></div>'+
+'<div id="tip" class="tip mono">Hidden until the Autopsy.</div></header>'+roll+
+'<section class="case"><div class="cttl"><span class="cico">'+ic(cs.ic)+'</span><h2>'+cs.t+'</h2></div><span class="refs mono">'+cs.r+'</span><p class="ctx">'+cs.c+'</p></section>'+body;}
+
+function updateTop(){const t=document.getElementById("tok"),f=document.getElementById("batfill");if(!t)return;
+const c=tokCls();t.textContent=S.tokens+"T";t.className="mono tok "+c;f.style.width=(S.tokens/START_TOKENS*100)+"%";f.className=c;}
+
+function renderInv(){const z=document.getElementById("invzone");if(!z)return;
+const cs=CASES[S.idx],cse=S.cases[S.idx],dry=S.tokens<COST;
+const cell=(k,label)=>{const got=cse[k],other=cse[k==="hear"?"search":"hear"];
+let cls="ibtn",dis=false,lab;
+if(got){cls+=" got";lab=k==="hear"?"✓ HEARD":"✓ SEARCHED";}
+else if(dry){cls+=" dry";dis=true;lab="0T LEFT — MUST RULE";}
+else lab=label+" (5T)";
+const hint=(!got&&other&&!dry)?'<span class="hint">+5T to combine facts &amp; Torah (upgrades Ruling C)</span>':"";
+return '<div class="icell"><button type="button" class="'+cls+'" data-act="'+k+'"'+(dis?" disabled":"")+'>'+ic(k)+'<span class="il mono">'+lab+'</span></button>'+hint+'</div>';};
+let finds="";
+if(cse.hear)finds+='<div class="find h"><span class="fh mono">HEARD — HIDDEN FACT</span><p>'+cs.h+'</p></div>';
+if(cse.search)finds+='<div class="find s"><span class="fh mono">SEARCHED — TORAH PRECEDENT</span><p>'+cs.s+'</p></div>';
+z.innerHTML='<div class="inv">'+cell("hear","HEAR")+cell("search","SEARCH")+'</div>'+finds;}
+
+function renderRulings(){const z=document.getElementById("rulings");if(!z)return;
+const cs=CASES[S.idx],cse=S.cases[S.idx];
+const inv=cse.hear||cse.search,full=cse.hear&&cse.search;
+z.innerHTML=cs.ru.map(ru=>{
+if(ru.id==="C"&&!inv)return '<div class="rule lock">'+ic("lock")+'<span class="lockt">UNEXAMINED RULING — Spend 5T on HEAR or SEARCH to uncover hidden facts or Torah precedent.</span></div>';
+const v=variantOf(ru,cse);
+const sel=S.pending===ru.id;
+const anim=(ru.id==="C"&&S.animC)?" unl":"";
+const badge=(ru.id==="C"&&full)?'<span class="full mono">'+ic("check")+'FACTS + TORAH INTEGRATED</span>':"";
+const conf=sel?'<div class="confirm"><span class="ct">Confirm this ruling?</span><button type="button" class="yes mono" data-act="confirm">CONFIRM</button><button type="button" class="no mono" data-act="cancel">CANCEL</button></div>':"";
+return '<button type="button" class="rule'+(sel?" sel":"")+anim+'" data-act="rule" data-id="'+ru.id+'">'+
+'<span class="rl mono">'+ru.id+'</span>'+
+'<span class="rti">'+v.t+'</span><span class="rsm">'+v.sm+'</span>'+
+'<span class="rpr">Precedent: “'+v.pr+'”</span>'+badge+conf+'</button>';}).join("");
+S.animC=false;}
+
+function autopsyHTML(){const R=evaluate(),e=R.e;
+const portrait=e.id==="fractured"
+?(R.flipped?"The gate could not hold a line. Rulings flipped between cases—and when the bench contradicts itself, the town stops trusting the law.":"Your rulings held a consistent line, yet justice outran what the town could bear. With good intentions and sound theology, the bench itself became the dispute.")
+:e.v+" "+e.v2;
+const stat=(n,sub,v)=>'<div class="stat"><span class="sn mono">'+n+'</span><span class="sub">'+sub+'</span><span class="sv mono">'+v+'</span><span class="ss mono '+stCls(v)+'">'+stLbl(v)+'</span></div>';
+const diag=R.flipped
+?'<div class="diag bad"><span class="dh mono">CONSISTENCY DIAGNOSIS</span><p>In Case 1 you ruled: “'+S.precedents[0]+'”. Yet in Case 3 you ruled: “'+S.precedents[2]+'”. Did your judgement shift—or did your tokens run out?</p></div>'
+:'<div class="diag good"><span class="dh mono">CONSISTENCY DIAGNOSIS</span><p>Your judgement held a consistent line from Case 1 to Case 3.</p></div>';
+return '<section class="ban"><span class="bico '+e.mood+'">'+ic("scales")+'</span>'+
+'<span class="ey mono">SOCIETY PORTRAIT — MORNING AT THE GATE</span><h2 class="mono">'+e.ti+'</h2>'+
+'<p class="vp">'+portrait+'</p></section>'+
+'<div class="stats">'+stat("JUSTICE","Torah &amp; vulnerable",R.st[0])+stat("MERCY","Human dignity",R.st[1])+stat("COMMUNITY","Town trust",R.st[2])+'</div>'+
+'<section><h3 class="sh mono">THE PRECEDENT ROLL</h3><div class="roll"><div class="roll-i">'+S.precedents.map(rollItem).join("")+'</div></div></section>'+
+diag+
+'<div class="acts"><button type="button" class="primary mono" data-act="again">'+ic("rotate")+'PLAY AGAIN</button><button type="button" class="ghost mono" id="copybtn" data-act="copy">'+ic("copy")+'COPY SUMMARY</button></div>'+
+'<p class="foot mono">AT THE GATE · EXOD 21 · DEUT 15 · EXOD 23 · DEUT 16 · LEV 19 · DEUT 24</p>';}
+
+function summaryText(){return "AT THE GATE — "+evaluate().e.ti+"\n"+S.precedents.map((p,i)=>"P"+(i+1)+': "'+p+'"').join("\n");}
+
+function buy(k){const cse=S.cases[S.idx];if(S.done||S.reaction||S.tokens<COST||cse[k])return;
+S.tokens-=COST;cse[k]=true;
+S.animC=true; // amber pulse on Card C when it unlocks OR upgrades to 'both'
+updateTop();renderInv();renderRulings();saveState();}
+
+function confirmRuling(){if(!S.pending||S.reaction)return;
+const ru=CASES[S.idx].ru.filter(x=>x.id===S.pending)[0];
+const v=variantOf(ru,S.cases[S.idx]);
+S.picked[S.idx]={id:ru.id,ap:ru.ap,d:v.d,pr:v.pr,rx:v.rx};
+S.precedents.push(v.pr);S.pending=null;
+S.reaction={rx:v.rx,pr:v.pr};
+render();
+const el=document.querySelector(".rxcard");
+if(el&&el.scrollIntoView){el.scrollIntoView({behavior:"smooth",block:"center"});}else{window.scrollTo(0,0);}}
+
+function nextStage(){if(S.idx<2){S.idx++;S.reaction=null;render();window.scrollTo(0,0);}
+else{S.reaction=null;S.done=true;render();window.scrollTo(0,0);}}
+
+function pillTip(el){const t=document.getElementById("tip");if(!t)return;
+t.textContent=TIPS[el.getAttribute("data-pi")]||"Hidden until the Autopsy.";
+t.classList.add("on");clearTimeout(tipT);tipT=setTimeout(()=>t.classList.remove("on"),4000);}
+
+function copyText(txt){
+const done=()=>{const b=document.getElementById("copybtn");if(!b)return;const old=b.innerHTML;
+b.innerHTML=ic("check")+"COPIED";setTimeout(()=>{b.innerHTML=old;},1500);};
+const fb=()=>{const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";
+document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta);done();};
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,fb);}else{fb();}}
+
+function render(){const app=document.getElementById("app");
+if(!S){app.innerHTML=introHTML();return;}
+if(S.done){app.innerHTML=autopsyHTML();saveState();return;}
+app.innerHTML=caseHTML();updateTop();renderInv();renderRulings();saveState();}
+
+function onClick(e){const el=e.target.closest("[data-act]");if(!el)return;
+const a=el.getAttribute("data-act");
+if(a==="start"||a==="again"){newGame();render();window.scrollTo(0,0);}
+else if(a==="hear"||a==="search")buy(a);
+else if(a==="rule"){if(!S.reaction){S.pending=el.getAttribute("data-id");renderRulings();}}
+else if(a==="confirm")confirmRuling();
+else if(a==="cancel"){S.pending=null;renderRulings();}
+else if(a==="next")nextStage();
+else if(a==="pill")pillTip(el);
+else if(a==="copy")copyText(summaryText());}
+
+if(typeof document!=="undefined"&&document.addEventListener){
+document.addEventListener("click",onClick);S=loadState();render();}
+</script>
+</body>
+</html>
